@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COCOMO calculator - 2311201204</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+            color: #000000;
+        }
+
+        h1 {
+            text-align: center;
+            background-color: #d1c4e9;
+            color: #000000;
+            padding: 10px 20px;
+            border-radius: 5px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        form {
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            max-width: 50vw;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input,
+        select,
+        button {
+            padding: 10px;
+            margin-bottom: 10px;
+            width: 100%;
+            max-width: 300px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        button {
+            background-color: #6200ea;
+            color: #000000;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #3700b3;
+        }
+
+        .result {
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            max-width: 50vw;
+        }
+
+        .eaf-container {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .category-div {
+            width: 100%;
+        }
+
+        .drivers-div {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .category-label {
+            margin-right: 10px;
+        }
+    </style>
+    <script>
+        const eafRatings = {
+            "Product attributes": {
+                "Required software reliability": {
+                    "Very Low": 0.75,
+                    "Low": 0.88,
+                    "Nominal": 1.00,
+                    "High": 1.15,
+                    "Very High": 1.40
+                },
+                "Size of application database": {
+                    "Very Low": 0.94,
+                    "Low": 1.00,
+                    "Nominal": 1.08,
+                    "High": 1.16
+                },
+                "Complexity of the product": {
+                    "Very Low": 0.70,
+                    "Low": 0.85,
+                    "Nominal": 1.00,
+                    "High": 1.15,
+                    "Very High": 1.30,
+                    "Extra High": 1.65
+                }
+            },
+            "Hardware attributes": {
+                "Run-time performance constraints": {
+                    "Nominal": 1.00,
+                    "High": 1.11,
+                    "Very High": 1.30,
+                    "Extra High": 1.66
+                },
+                "Memory constraints": {
+                    "Nominal": 1.00,
+                    "High": 1.06,
+                    "Very High": 1.21,
+                    "Extra High": 1.56
+                },
+                "Volatility of the virtual machine environment": {
+                    "Very Low": 0.87,
+                    "Low": 1.00,
+                    "Nominal": 1.15,
+                    "High": 1.30
+                },
+                "Required turnaround time": {
+                    "Very Low": 0.87,
+                    "Low": 1.00,
+                    "Nominal": 1.07,
+                    "High": 1.15
+                }
+            },
+            "Personnel attributes": {
+                "Analyst capability": {
+                    "Very Low": 1.46,
+                    "Low": 1.19,
+                    "Nominal": 1.00,
+                    "High": 0.86,
+                    "Very High": 0.71
+                },
+                "Applications experience": {
+                    "Very Low": 1.29,
+                    "Low": 1.13,
+                    "Nominal": 1.00,
+                    "High": 0.91,
+                    "Very High": 0.82
+                },
+                "Software engineer capability": {
+                    "Very Low": 1.42,
+                    "Low": 1.17,
+                    "Nominal": 1.00,
+                    "High": 0.86,
+                    "Very High": 0.70
+                },
+                "Virtual machine experience": {
+                    "Very Low": 1.21,
+                    "Low": 1.10,
+                    "Nominal": 1.00,
+                    "High": 0.90
+                },
+                "Programming language experience": {
+                    "Very Low": 1.14,
+                    "Low": 1.07,
+                    "Nominal": 1.00,
+                    "High": 0.95
+                }
+            },
+            "Project attributes": {
+                "Application of software engineering methods": {
+                    "Very Low": 1.24,
+                    "Low": 1.10,
+                    "Nominal": 1.00,
+                    "High": 0.91,
+                    "Very High": 0.82
+                },
+                "Use of software tools": {
+                    "Very Low": 1.24,
+                    "Low": 1.10,
+                    "Nominal": 1.00,
+                    "High": 0.91,
+                    "Very High": 0.83
+                },
+                "Required development schedule": {
+                    "Very Low": 1.23,
+                    "Low": 1.08,
+                    "Nominal": 1.00,
+                    "High": 1.04,
+                    "Very High": 1.10
+                }
+            }
+        }
+
+        function calculateCOCOMO() {
+            const kloc = parseFloat(document.getElementById('kloc').value);
+            if (isNaN(kloc) || kloc <= 0) {
+                document.getElementById('effort-result').textContent = '';
+                document.getElementById('duration-result').textContent = '';
+                document.getElementById('eaf-result').textContent = '';
+                document.getElementById('corrected-effort-result').textContent = '';
+                document.getElementById('corrected-duration-result').textContent = '';
+                return;
+            }
+            const projectType = document.getElementById('projectType').value;
+            let effort, time;
+            switch (projectType) {
+                case 'organic':
+                    effort = 2.4 * Math.pow(kloc, 1.05);
+                    time = 2.5 * Math.pow(effort, 0.38);
+                    break;
+                case 'semi':
+                    effort = 3.0 * Math.pow(kloc, 1.12);
+                    time = 2.5 * Math.pow(effort, 0.35);
+                    break;
+                case 'embedded':
+                    effort = 3.6 * Math.pow(kloc, 1.20);
+                    time = 2.5 * Math.pow(effort, 0.32);
+                    break;
+                default:
+                    return;
+            }
+
+            const eaf = calcEAF();
+            let correctedEffort, correctedTime;
+            switch (projectType) {
+                case 'organic':
+                    correctedEffort = 3.2 * Math.pow(kloc, 1.05) * eaf;
+                    correctedTime = 2.5 * Math.pow(correctedEffort, 0.38);
+                    break;
+                case 'semi':
+                    correctedEffort = 3.0 * Math.pow(kloc, 1.12) * eaf;
+                    correctedTime = 2.5 * Math.pow(correctedEffort, 0.38);
+                    break;
+                case 'embedded':
+                    correctedEffort = 3.6 * Math.pow(kloc, 1.20) * eaf;
+                    correctedTime = 2.5 * Math.pow(correctedEffort, 0.32);
+                    break;
+                default:
+                    return;
+            }
+
+            document.getElementById('effort-result').textContent = effort.toFixed(2);
+            document.getElementById('duration-result').textContent = time.toFixed(2);
+            document.getElementById('eaf-result').textContent = eaf.toFixed(2);
+            document.getElementById('corrected-effort-result').textContent = correctedEffort.toFixed(2);
+            document.getElementById('corrected-duration-result').textContent = correctedTime.toFixed(2);
+        }
+
+        function calcEAF() {
+            const costDrivers = document.querySelectorAll('.cost-driver');
+            let eaf = 1;
+            for (const driver of costDrivers) {
+                const value = parseFloat(driver.value);
+                eaf *= value;
+            }
+            return eaf;
+        }
+
+        function makeDropdowns() {
+            const eafContainer = document.getElementById('eafContainer');
+            eafContainer.classList.add('eaf-container');
+
+            for (const category in eafRatings) {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.classList.add('category-div');
+
+                const titleDiv = document.createElement('div');
+                titleDiv.innerHTML = `<h3>${category}</h3>`;
+                categoryDiv.appendChild(titleDiv);
+
+                const driversDiv = document.createElement('div');
+                driversDiv.classList.add('drivers-div');
+                categoryDiv.appendChild(driversDiv);
+
+                for (const driver in eafRatings[category]) {
+                    const driverItemDiv = document.createElement('div');
+                    driverItemDiv.classList.add('driver-item');
+
+                    const label = document.createElement('label');
+                    label.textContent = driver;
+                    label.classList.add('category-label');
+                    driverItemDiv.appendChild(label);
+
+                    const select = document.createElement('select');
+                    select.classList.add('cost-driver');
+                    driverItemDiv.appendChild(select);
+
+                    for (const rating in eafRatings[category][driver]) {
+                        const option = document.createElement('option');
+                        option.value = eafRatings[category][driver][rating];
+                        option.textContent = rating;
+                        if (rating === "Nominal") option.selected = true;
+                        select.appendChild(option);
+                    }
+
+                    driversDiv.appendChild(driverItemDiv);
+                }
+
+                eafContainer.appendChild(categoryDiv);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            makeDropdowns();
+            const inputs = document.querySelectorAll('#kloc, #projectType, .cost-driver');
+            inputs.forEach(input => input.addEventListener('input', calculateCOCOMO));
+        });
+    </script>
+</head>
+
+<body>
+    <h1>COCOMO Calculator</h1>
+    <form id="cocomoForm" onsubmit="event.preventDefault();">
+        <label for="kloc">Project Size (KLOC):</label>
+        <input type="number" id="kloc" name="kloc" min="1">
+
+        <label for="projectType">Project Type:</label>
+        <select id="projectType" name="projectType">
+            <option value="organic">Organic</option>
+            <option value="semi">Semi-Detached</option>
+            <option value="embedded" selected>Embedded</option>
+        </select>
+
+        <h2>Cost Drivers</h2>
+        <div id="eafContainer"></div>
+    </form>
+
+    <div class="result" id="result">
+        <h3>Cost Estimation</h3>
+        <table border="1" style="margin: 0 auto; text-align: center; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th>Effort (Person-Months)</th>
+                    <th>Duration (Months)</th>
+                    <th>EAF</th>
+                    <th>Corrected Effort (Person-Months)</th>
+                    <th>Corrected Duration (Months)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="effort-result"></td>
+                    <td id="duration-result"></td>
+                    <td id="eaf-result"></td>
+                    <td id="corrected-effort-result"></td>
+                    <td id="corrected-duration-result"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>
